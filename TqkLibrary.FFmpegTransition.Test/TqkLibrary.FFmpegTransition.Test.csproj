@@ -9,20 +9,20 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="FFmpegArgs" Version="2.1.0" />
-		<PackageReference Include="FFmpegArgs.Codec" Version="2.1.0" />
-		<PackageReference Include="FFmpegArgs.Cores" Version="2.1.0" />
-		<PackageReference Include="FFmpegArgs.Executes" Version="2.1.0" />
-		<PackageReference Include="FFmpegArgs.Extensions" Version="2.1.0" />
-		<PackageReference Include="FFmpegArgs.Filters" Version="2.1.0" />
-		<PackageReference Include="FFmpegArgs.Filters.AudioFilters" Version="2.1.0" />
-		<PackageReference Include="FFmpegArgs.Filters.AudioSources" Version="2.1.0" />
-		<PackageReference Include="FFmpegArgs.Filters.Multimedia" Version="2.1.0" />
-		<PackageReference Include="FFmpegArgs.Filters.OpenCLVideoFilters" Version="2.1.0" />
-		<PackageReference Include="FFmpegArgs.Filters.VideoFilters" Version="2.1.0" />
-		<PackageReference Include="FFmpegArgs.Filters.VideoSources" Version="2.1.0" />
-		<PackageReference Include="FFmpegArgs.Inputs" Version="2.1.0" />
-		<PackageReference Include="FFmpegArgs.Outputs" Version="2.1.0" />
+		<PackageReference Include="FFmpegArgs" Version="2.2.0" />
+		<PackageReference Include="FFmpegArgs.Codec" Version="2.2.0" />
+		<PackageReference Include="FFmpegArgs.Cores" Version="2.2.0" />
+		<PackageReference Include="FFmpegArgs.Executes" Version="2.2.0" />
+		<PackageReference Include="FFmpegArgs.Extensions" Version="2.2.0" />
+		<PackageReference Include="FFmpegArgs.Filters" Version="2.2.0" />
+		<PackageReference Include="FFmpegArgs.Filters.AudioFilters" Version="2.2.0" />
+		<PackageReference Include="FFmpegArgs.Filters.AudioSources" Version="2.2.0" />
+		<PackageReference Include="FFmpegArgs.Filters.Multimedia" Version="2.2.0" />
+		<PackageReference Include="FFmpegArgs.Filters.OpenCLVideoFilters" Version="2.2.0" />
+		<PackageReference Include="FFmpegArgs.Filters.VideoFilters" Version="2.2.0" />
+		<PackageReference Include="FFmpegArgs.Filters.VideoSources" Version="2.2.0" />
+		<PackageReference Include="FFmpegArgs.Inputs" Version="2.2.0" />
+		<PackageReference Include="FFmpegArgs.Outputs" Version="2.2.0" />
 		
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
 		<PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
