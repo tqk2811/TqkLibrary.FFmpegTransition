@@ -11,17 +11,9 @@
 		<license type="expression">MIT</license>
 		<readme>docs\README.MD</readme>
 		<dependencies>
-			<group targetFramework="netstandard2.0">
-				<dependency id="FFmpegArgs.Filters.Multimedia" version="[2.1,2.2)" />
-				<dependency id="FFmpegArgs.Filters.VideoFilters" version="[2.1,2.2)" />
-			</group>
-			<group targetFramework="net6.0">
-				<dependency id="FFmpegArgs.Filters.Multimedia" version="[2.1,2.2)" />
-				<dependency id="FFmpegArgs.Filters.VideoFilters" version="[2.1,2.2)" />
-			</group>
 			<group targetFramework="net8.0">
-				<dependency id="FFmpegArgs.Filters.Multimedia" version="[2.1,2.2)" />
-				<dependency id="FFmpegArgs.Filters.VideoFilters" version="[2.1,2.2)" />
+				<dependency id="FFmpegArgs.Filters.Multimedia" version="[2.2,2.3)" />
+				<dependency id="FFmpegArgs.Filters.VideoFilters" version="[2.2,2.3)" />
 			</group>
 		</dependencies>
 	</metadata>
