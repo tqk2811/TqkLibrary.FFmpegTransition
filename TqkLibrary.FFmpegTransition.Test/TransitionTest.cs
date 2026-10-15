@@ -128,26 +128,90 @@ namespace TqkLibrary.FFmpegTransition.Test
         /// <summary>Renders the transition between two solid 64x64 layers of the given alpha and returns the alpha byte of every output pixel.</summary>
         static byte[] RenderAlpha(TransitionBase transition, int alpha, string name)
         {
+            string[] keepColor = { "p(X,Y)", "p(X,Y)", "p(X,Y)" };
+            byte[] raw = RenderRgba(transition, keepColor, alpha, keepColor, alpha, name);
+            return raw.Where((_, i) => i % 4 == 3).ToArray();
+        }
+
+        /// <summary>
+        /// Renders the transition (1 s, 24 fps) between two 64x64 yuva420p layers whose Y/Cb/Cr geq expressions and alpha are given
+        /// (first layer, then second) and returns the raw rgba bytes of every output frame.
+        /// </summary>
+        static byte[] RenderRgba(TransitionBase transition, string[] firstYuv, int firstAlpha, string[] secondYuv, int secondAlpha, string name)
+        {
             TimeSpan totalDuration = TimeSpan.FromSeconds(1);
             TimeSpan stepDuration = transition.IsConcat ? totalDuration / 2 : totalDuration;
             FFmpegArg ffmpegArg = new FFmpegArg().OverWriteOutput();
-            // A 64x64 clip whose alpha is forced to the given value (FFmpegArg needs a real input; a color source alone is refused).
-            ImageMap Layer(string file) => ffmpegArg
+            // A 64x64 clip with the given colour and alpha (FFmpegArg needs a real input; a color source alone is refused).
+            ImageMap Layer(string file, string[] yuv, int alpha) => ffmpegArg
                 .AddImagesInput(new ImageFileInput(file).Duration(stepDuration))
                 .First()
                 .FpsFilter().Fps(24).MapOut
                 .ScaleFilter().W("64").H("64").MapOut
                 .FormatFilter(PixFmt.yuva420p).MapOut
-                .GeqFilter().Lum("p(X,Y)").Cb("p(X,Y)").Cr("p(X,Y)").A($"{alpha}").MapOut;
+                .GeqFilter().Lum(yuv[0]).Cb(yuv[1]).Cr(yuv[2]).A($"{alpha}").MapOut;
 
-            ImageMap result = transition.MakeTransition(Layer(".\\Resources\\Acro Trip ED.mp4"), Layer(".\\Resources\\Mayonaka Punch OP.mp4"), totalDuration, 24);
+            ImageMap result = transition.MakeTransition(
+                Layer(".\\Resources\\Acro Trip ED.mp4", firstYuv, firstAlpha),
+                Layer(".\\Resources\\Mayonaka Punch OP.mp4", secondYuv, secondAlpha),
+                totalDuration, 24);
             string path = Path.Combine(Directory.GetCurrentDirectory(), $"{name}.rgba");
             ffmpegArg.AddOutput(new ImageFileOutput(path, result.FormatFilter(PixFmt.rgba).MapOut).AndSet(x => x.Format(MuxingFileFormat.rawvideo)));
             ffmpegArg.Render(new FFmpegRenderConfig()).Execute().EnsureSuccess();
 
             byte[] raw = File.ReadAllBytes(path);
             Assert.IsTrue(raw.Length >= 64 * 64 * 4 * 12, $"{name}: {raw.Length} bytes");
-            return raw.Where((_, i) => i % 4 == 3).ToArray();
+            return raw;
+        }
+
+        /// <summary>rgba of the centre pixel of the given frame.</summary>
+        static byte[] CentrePixel(byte[] raw, int frame)
+        {
+            int offset = frame * 64 * 64 * 4 + (32 * 64 + 32) * 4;
+            return raw.Skip(offset).Take(4).ToArray();
+        }
+
+        static void AssertNear(int expected, int actual, int tolerance, string what)
+            => Assert.IsTrue(Math.Abs(expected - actual) <= tolerance, $"{what}: expected {expected} +-{tolerance}, got {actual}");
+
+        static readonly string[] Black = { "0", "128", "128" };
+        static readonly string[] Red = { "81", "90", "240" };
+        static readonly string[] DarkGrey = { "60", "128", "128" };
+        static readonly string[] LightGrey = { "200", "128", "128" };
+
+        [TestMethod]
+        [DataRow(PixFmt.yuva420p)]
+        [DataRow(PixFmt.rgba)]
+        public void KeepAlpha_CrossFadeOverTransparent_KeepsLayerColour(PixFmt pixFmt)
+        {
+            var transition = new CrossFadeTransition { PixelFormat = pixFmt, KeepAlpha = true };
+            // First layer fully transparent (black colour, alpha 0), second an opaque solid red.
+            byte[] raw = RenderRgba(transition, Black, 0, Red, 255, $"CrossFade.overTransparent.{pixFmt}");
+
+            byte[] red = CentrePixel(raw, 23);
+            byte[] mid = CentrePixel(raw, 12);
+            Assert.IsTrue(red[0] > 200 && red[1] < 50 && red[2] < 50, $"end frame {string.Join(",", red)}");
+            AssertNear(128, mid[3], 8, "alpha at mid-transition");
+            for (int c = 0; c < 3; c++)
+                AssertNear(red[c], mid[c], 10, $"channel {c} at mid-transition");
+        }
+
+        [TestMethod]
+        [DataRow(PixFmt.yuva420p)]
+        [DataRow(PixFmt.rgba)]
+        public void KeepAlpha_CrossFadeOpaqueLayers_MixesColourAndStaysOpaque(PixFmt pixFmt)
+        {
+            var transition = new CrossFadeTransition { PixelFormat = pixFmt, KeepAlpha = true };
+            byte[] raw = RenderRgba(transition, DarkGrey, 255, LightGrey, 255, $"CrossFade.opaque.{pixFmt}");
+
+            byte[] first = CentrePixel(raw, 0);
+            byte[] second = CentrePixel(raw, 23);
+            byte[] mid = CentrePixel(raw, 12);
+            Assert.IsTrue(second[0] - first[0] > 100, $"first {first[0]}, second {second[0]}");
+            AssertNear(255, mid[3], 2, "alpha at mid-transition");
+            // Frame 0 is p=0 and frame 23 is p=23/24, so the midpoint of the two ends sits ~1/48 off the true p=0.5 mix.
+            for (int c = 0; c < 3; c++)
+                AssertNear((first[c] + second[c]) / 2, mid[c], 8, $"channel {c} at mid-transition");
         }
 
         [TestMethod]
