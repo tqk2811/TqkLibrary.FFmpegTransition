@@ -6,11 +6,11 @@ using TqkLibrary.FFmpegTransition.Interfaces;
 
 namespace TqkLibrary.FFmpegTransition.Transitions
 {
-    public class ClockTransition : ITransition
+    public class ClockTransition : TransitionBase
     {
-        public bool IsConcat { get; } = false;
+        public override bool IsConcat => false;
         public bool Contrary { get; set; } = false;
-        public ImageMap MakeTransition(ImageMap first_imageMap, ImageMap second_imageMap, TimeSpan totalDuration, double fps)
+        protected override ImageMap Make(ImageMap first_imageMap, ImageMap second_imageMap, TimeSpan totalDuration, double fps)
         {
             // (0.5W, 0.5H) -> (0.5W, 0) => vecto v1 = (0.5W-0.5W,0-0.5H)   = (0        ,    -0.5*H)
             // (0.5W, 0.5H) -> (X, Y) => vecto v2                           = (X - 0.5*W ,   Y - 0.5*H);

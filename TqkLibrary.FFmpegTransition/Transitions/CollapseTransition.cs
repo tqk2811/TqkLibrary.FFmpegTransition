@@ -7,9 +7,9 @@ using TqkLibrary.FFmpegTransition.Interfaces;
 
 namespace TqkLibrary.FFmpegTransition.Transitions
 {
-    public class CollapseTransition : ITransition
+    public class CollapseTransition : TransitionBase
     {
-        public bool IsConcat { get; } = false;
+        public override bool IsConcat => false;
         readonly CollapseExpandMode collapseExpandMode;
         public CollapseTransition(CollapseExpandMode collapseExpandMode)
         {
@@ -17,7 +17,7 @@ namespace TqkLibrary.FFmpegTransition.Transitions
         }
 
 
-        public ImageMap MakeTransition(ImageMap first_imageMap, ImageMap second_imageMap, TimeSpan totalDuration, double fps)
+        protected override ImageMap Make(ImageMap first_imageMap, ImageMap second_imageMap, TimeSpan totalDuration, double fps)
         {
             double TRANSITION_DURATION = totalDuration.TotalSeconds;
             ImageMap imageMap = null;
@@ -27,8 +27,8 @@ namespace TqkLibrary.FFmpegTransition.Transitions
                     imageMap = second_imageMap
                         .GeqFilter()
                             .Lum("p(X,Y)")
-                            .A($"if(lte(pow(sqrt(pow(W/2,2)+pow(H/2,2))-sqrt(pow(T/{TRANSITION_DURATION}*W/2,2)+pow(T/{TRANSITION_DURATION}*H/2,2)),2),pow(X-(W/2),2)+pow(Y-(H/2),2)),255,0)").MapOut;
-                    imageMap = imageMap.OverlayFilterOn(first_imageMap).MapOut;
+                            .A($"if(lte(pow(sqrt(pow(W/2,2)+pow(H/2,2))-sqrt(pow(T/{TRANSITION_DURATION}*W/2,2)+pow(T/{TRANSITION_DURATION}*H/2,2)),2),pow(X-(W/2),2)+pow(Y-(H/2),2)),{this.VisibleAlpha},0)").MapOut;
+                    imageMap = this.OverlayOnFirst(imageMap, first_imageMap);
                     break;
 
                 case CollapseExpandMode.Horizontal:
